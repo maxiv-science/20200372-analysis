@@ -9,11 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # list of strongest tentative (111) hits
-#scan, burst = (234, 7) # very nice
+scan, burst = (234, 7) # very nice
 #scan, burst = (234, 32)
 #scan, burst = (234, 53)
 #scan, burst = (235, 59)
-scan, burst = (235, 63) # very nice
+#scan, burst = (235, 63) # very nice
 #scan, burst = (236, 21)
 #scan, burst = (236, 92)
 #scan, burst = (236, 93)
