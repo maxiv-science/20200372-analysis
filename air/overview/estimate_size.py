@@ -34,7 +34,7 @@ offsets = (-.5,-.25,-.1,0,.1,.25,.5)
 angles=range(50, 70+1, 4)
 
 angle = 70
-offset = -.15
+offset = .15
 
 ### Define a Bragg geometry
 g = ptypy.core.geometry_bragg.Geo_BraggProjection(psize=(psize, psize),
@@ -70,15 +70,17 @@ diff = nmutils.utils.noisyImage(I, photonsTotal=photons)
 
 # plot
 w = 40
-fig, ax = plt.subplots(nrows=2)
+fig, ax = plt.subplots(ncols=2)
 ax[0].imshow(diff, interpolation='none', cmap='jet', norm=matplotlib.colors.LogNorm())
 ax[0].set_xlim(128-w//2, 128+w//2)
 ax[0].set_ylim(128-w//2, 128+w//2)
 ax[0].set_title('simulation with d=%.0f nm'%(diameter*1e9))
 
 # real data
-with h5py.File('/data/visitors/nanomax/20200372/2021062308/raw/sample/000234.h5', 'r') as fp:
-    im = fp['entry/measurement/merlin/frames'][7691]
+scan, frame = 234, 7691
+with h5py.File('/data/visitors/nanomax/20200372/2021062308/raw/sample/%06u.h5'%scan, 'r') as fp:
+    im = fp['entry/measurement/merlin/frames'][frame]
 ax[1].imshow(np.log10(im), vmax=np.log10(2000), cmap='jet')
 ax[1].set_ylim(82-w//2, 82+w//2)
 ax[1].set_xlim(38-w//2, 38+w//2)
+ax[1].set_title('real data, scan %u frame %u'%(scan, frame))

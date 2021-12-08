@@ -1,7 +1,7 @@
-### Maps out diffraction of a truncated octahedron across a parameter
+### Maps out diffraction of a cubic particle across a parameter
 ### space of phi and rocking angles.
 
-### Defines a truncated-octahedral particle, rotates it, and applies the
+### Defines a  particle, rotates it, and applies the
 ### projection operator before doing the 2D FT.
 
 import ptypy
