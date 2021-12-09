@@ -1,6 +1,7 @@
 #!/bin/sh
 
 #SBATCH --partition=v100
+#SBATCH --reservation=konstantin
 #SBATCH --job-name=pynx
 #SBATCH --time=00:20:00
 #SBATCH --output=%j.log
