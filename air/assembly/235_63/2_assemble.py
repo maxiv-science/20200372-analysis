@@ -1,5 +1,5 @@
 """
-Assembles Pd(111) data with physical units on the autocorrelaction constraint.
+Assembles data with physical units on the autocorrelaction constraint.
 """
 
 import numpy as np
@@ -39,7 +39,7 @@ data, rolls = pre_align_rolls(data, roll_center=CENTER, plot=True, threshold=3)
 crop = (data.shape[-1] - shape) // 2
 data = data[:, crop:-crop, crop:-crop]
 
-# now assemble
+# now assemble!
 envelope = generate_envelope(Nj, data.shape[-1], Q=(Q3, Q12, Q12), Dmax=Dmax, theta=theta)
 W = generate_initial(data, Nj)
 p = ProgressPlot()
@@ -48,9 +48,8 @@ for i in range(100):
     W, error = C(W, envelope)
     W, Pjlk, timing = M(W, data, Nl=Nl, ml=ml, beta=fudge,
                         nproc=24,
-                        force_continuity=(5),
+                        force_continuity=5,
                         roll_center=CENTER,
-                        cap_coefficients=None,
                         center_model=True)
     [print(k, '%.3f'%v) for k, v in timing.items()]
     p.update(W, Pjlk, [], vmax=1, log=True)

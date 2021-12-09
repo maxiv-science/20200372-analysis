@@ -1,0 +1,7 @@
+module purge
+module load fosscuda/2019a Python Tkinter
+source /mxn/home/alebjo/analysis/assembly/env/bin/activate
+
+# this prevents pynx from trying to use opencl
+export PYNX_PU=CUDA
+

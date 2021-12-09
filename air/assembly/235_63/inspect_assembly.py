@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-dct = np.load('assembled_1e-2.npz')
+dct = np.load('assembled.npz')
 W = dct['W']
 Pjlk = dct['Pjlk']
 
