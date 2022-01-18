@@ -8,7 +8,7 @@ import h5py
 import numpy as np
 from scipy.ndimage.interpolation import map_coordinates
 
-data = np.load('assembled.npz')['W'][1:-1]
+data = np.load('assembled.npz')['W'][2:-2]
 
 # pad to equal side, it gets weird otherwise
 pad = data.shape[-1] - data.shape[0]

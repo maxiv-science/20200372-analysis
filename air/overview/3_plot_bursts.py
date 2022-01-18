@@ -22,7 +22,7 @@ scan, burst = (235, 63) # very nice - GIF
 
 # list of strongest tentative (200) hits
 #scan, burst = (234, 117)
-#scan, burst = (234, 133) # very nice - GIF
+scan, burst = (234, 133) # very nice - GIF
 #scan, burst = (235, 92) # very nice
 #scan, burst = (235, 123)
 #scan, burst = (236, 13)
