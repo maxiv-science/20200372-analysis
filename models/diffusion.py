@@ -38,7 +38,7 @@ t = np.logspace(-8, 1, 200)
 dimensions = 2  # dimensions (1=flat, 2=cylindrical, 3=spherical)
 
 
-def laplacian(a, dim=2):
+def laplacian(a, r, dim=2):
     """
     In flat, cylindrical, or spherical coordinates.
     """
@@ -75,57 +75,20 @@ def laplacian(a, dim=2):
 def H(x):
     return (x >= 0).astype(int)
 
-
-def dydt(y, t, r, v, D, r0):
-    stp = r[1] - r[0]
-    return D * laplacian(y, dim=dimensions) + v * H(r0 - r)
-
-
-if 0:
-    # single simulation of H2 generation at NanoMAX in real units: 3 mM
-    v = 1505  # M / s
-    r0 = 50e-9
-    D = 5e-9
-    y0 = np.zeros_like(r)
-    c = odeint(dydt, y0, t, args=(r, v, D, r0))
-
-    edge = np.where(r <= r0)[-1][-1]
-    mol_per_length = np.sum(
-        c[:, :edge]
-        * 2 * np.pi * r[:edge]
-        * np.diff(r)[:edge].reshape((1, -1)),
-        axis=1,
-    )
-    av_conc = mol_per_length / (np.pi * r0**2)
-    plt.plot(t, av_conc)
+if __name__ == '__main__':
+    def dydt(y, t, r, v, D, r0):
+        stp = r[1] - r[0]
+        return D * laplacian(y, r, dim=dimensions) + v * H(r0 - r)
 
 
-if 0:
-    # simulate across a relevant parameter space and save the data.
-    vs = np.logspace(0, 3, 4)     # M / s - estimated from G values
-    vs *= 1e3                     # mol / m3 / s
-    Ds = np.logspace(-7, -4, 4)   # cm2 / s
-    Ds *= 1e-4                    # m2 / s
-    r0s = np.logspace(1, 3, 3)    # nm
-    r0s *= 1e-9                   # m
-    vs, Ds, r0s = np.reshape(np.meshgrid(vs, Ds, r0s), (3, -1))
-    conc = []
-    for v, D, r0 in zip(vs, Ds, r0s):
-        print(v, D, r0)
-        y0 = (r < r0).astype(int) * c0
-        conc.append(odeint(dydt, y0, t, args=(r, v, D, r0)))
-    np.savez('diffusion.npz', conc=np.array(conc), r=r, t=t, vs=vs, Ds=Ds, r0s=r0s)
+    if 1:
+        # single simulation of H2 generation at NanoMAX in real units: 3 mM
+        v = 1505  # M / s
+        r0 = 50e-9
+        D = 5e-9
+        y0 = np.zeros_like(r)
+        c = odeint(dydt, y0, t, args=(r, v, D, r0))
 
-
-
-if 0:
-    fig, ax = plt.subplots(ncols=1, figsize=(6,4))
-    plt.subplots_adjust(bottom=.2, left=.15, right=.99, top=.99)
-
-    dct = np.load('diffusion.npz')
-    for k in dct.keys():
-        exec("%s = dct['%s']" % (k, k))
-    for v, D, r0, c in zip(vs, Ds, r0s, conc):
         edge = np.where(r <= r0)[-1][-1]
         mol_per_length = np.sum(
             c[:, :edge]
@@ -134,53 +97,79 @@ if 0:
             axis=1,
         )
         av_conc = mol_per_length / (np.pi * r0**2)
-        ax.plot(
-            np.log10(t * D / r0**2),
-            av_conc / (v * r0**2 / D / np.sqrt(3)),
-            lw=1,)
-#    x = np.linspace(-.5, 10)
-#    plt.plot(x, x, 'k--')
-    ax.xaxis.set_ticks(range(-6, 9, 2))
-    ax.yaxis.set_ticks(range(0, 9, 2))
-    ax.set_xlabel("$log(\\bar{t}) = log(t * D / {r_0}^2)$")
-    ax.set_ylabel("$\\bar{c} = c / (v * {r_0}^2 / [D \\sqrt{3}])$")
-    ax.set_aspect('equal')
-    mark, xmin, ymin = 8, ax.get_xlim()[0], ax.get_ylim()[0]
-    plt.autoscale(False)
-    ax.plot([mark, mark], [ymin, mark], color='gray', linestyle=':')
-    ax.plot([xmin, mark], [mark, mark], color='gray', linestyle=':')
-    plt.savefig('diffusion.pdf')
+        plt.plot(t, av_conc)
 
 
-# ############# ok so real units?
-# For water, 1 um tranmits .99916 according to CXRO.
-# We have T = I/I0 = exp(-mu d), so mu is around 8.4 cm^-1. NIST says
-# 10.4 cm^-1 at 8 keV assuming density 1 g/cm3, so adds up.
-#
-# This means that for a small path length d, we dump
-# I0 - I / V = I0 (1 - exp[-mu d]) / (r0**2 * d) per volume,
-# take the low d limit and it's (I0 mu) / r0**2.
-#
-# Choppin et al say that G for H2 is 0.047 umol/J. So that would mean...
-r0 = 50e-9  # m
-I0 = 7e10   # photons per second
-mu = 8.4e2  # 1/m
-v = (I0 * mu / r0**2     # absorbed photons per m3 per second
-     * 8500 * 1.602e-19  # photon energy in J
-     * .047 * 1e-6       # mol created per J
-     * 1e-3)             # conversion to mol/L/s.
+    if 0:
+        # simulate across a relevant parameter space and save the data.
+        vs = np.logspace(0, 3, 4)     # M / s - estimated from G values
+        vs *= 1e3                     # mol / m3 / s
+        Ds = np.logspace(-7, -4, 4)   # cm2 / s
+        Ds *= 1e-4                    # m2 / s
+        r0s = np.logspace(1, 3, 3)    # nm
+        r0s *= 1e-9                   # m
+        vs, Ds, r0s = np.reshape(np.meshgrid(vs, Ds, r0s), (3, -1))
+        conc = []
+        for v, D, r0 in zip(vs, Ds, r0s):
+            print(v, D, r0)
+            y0 = (r < r0).astype(int) * c0
+            conc.append(odeint(dydt, y0, t, args=(r, v, D, r0)))
+        np.savez('diffusion.npz', conc=np.array(conc), r=r, t=t, vs=vs, Ds=Ds, r0s=r0s)
 
-# now do the calculation for H2
-D = 5e-5 * 1e-4  # m2 / s
-C_H2 = v * r0**2 / (np.sqrt(3) * D) * np.log10(1 * D / r0**2)
 
-# for e(aq)
-D = 4.5e-5 * 1e-4  # m2/s
-v = v / .047 * .28
-C_e = v * r0**2 / (np.sqrt(3) * D) * np.log10(1 * D / r0**2)
 
-# for OH
-D = 2e-9  # m2/s
-C_OH = v * r0**2 / (np.sqrt(3) * D) * np.log10(1 * D / r0**2)
+    if 0:
+        fig, ax = plt.subplots(ncols=1, figsize=(6,4))
+        plt.subplots_adjust(bottom=.2, left=.15, right=.99, top=.99)
 
-# actually e- (aq) has roughly the same D as H2. So just scales with v.
+        dct = np.load('diffusion.npz')
+        for k in dct.keys():
+            exec("%s = dct['%s']" % (k, k))
+        for v, D, r0, c in zip(vs, Ds, r0s, conc):
+            edge = np.where(r <= r0)[-1][-1]
+            mol_per_length = np.sum(
+                c[:, :edge]
+                * 2 * np.pi * r[:edge]
+                * np.diff(r)[:edge].reshape((1, -1)),
+                axis=1,
+            )
+            av_conc = mol_per_length / (np.pi * r0**2)
+            ax.plot(
+                np.log10(t * D / r0**2),
+                av_conc / (v * r0**2 / D / np.sqrt(3)),
+                lw=1,)
+    #    x = np.linspace(-.5, 10)
+    #    plt.plot(x, x, 'k--')
+        ax.xaxis.set_ticks(range(-6, 9, 2))
+        ax.yaxis.set_ticks(range(0, 9, 2))
+        ax.set_xlabel("$log(\\bar{t}) = log(t * D / {r_0}^2)$")
+        ax.set_ylabel("$\\bar{c} = c / (v * {r_0}^2 / [D \\sqrt{3}])$")
+        ax.set_aspect('equal')
+        mark, xmin, ymin = 8, ax.get_xlim()[0], ax.get_ylim()[0]
+        plt.autoscale(False)
+        ax.plot([mark, mark], [ymin, mark], color='gray', linestyle=':')
+        ax.plot([xmin, mark], [mark, mark], color='gray', linestyle=':')
+        plt.savefig('diffusion.pdf')
+
+
+    # ############# ok so real units?
+    # For water, 1 um tranmits .99916 according to CXRO.
+    # We have T = I/I0 = exp(-mu d), so mu is around 8.4 cm^-1. NIST says
+    # 10.4 cm^-1 at 8 keV assuming density 1 g/cm3, so adds up.
+    #
+    # This means that for a small path length d, we dump
+    # I0 - I / V = I0 (1 - exp[-mu d]) / (pi * r0**2 * d) per volume,
+    # take the low d limit and it's (I0 mu) / (pi * r0**2).
+    #
+    # Choppin et al say that G for H2 is 0.047 umol/J. So that would mean...
+    r0 = 50e-9  # m
+    I0 = 7e10   # photons per second
+    mu = 8.4e2  # 1/m
+    v = (I0 * mu / r0**2 / np.pi  # absorbed photons per m3 per second
+         * 8500 * 1.602e-19  # photon energy in J
+         * .047 * 1e-6       # mol created per J
+         * 1e-3)             # conversion to mol/L/s.
+
+    # now do the calculation for H2
+    D = 5e-5 * 1e-4  # m2 / s
+    C_H2 = v * r0**2 / (np.sqrt(3) * D) * np.log10(1 * D / r0**2)
