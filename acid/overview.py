@@ -55,8 +55,8 @@ def radial_integral(image):
     return tops, np.array(avgs)
 
 
-### lattice parameter in air
-if 1:
+### lattice parameter in air - before moving the detector.
+if 0:
     scan = 234
     data = load_avg(scan)
     data[data > 2] = 0
@@ -98,11 +98,15 @@ if 0:
 
 
 def potential_dependence(scans, show_images=True):
+    """
+    Load a series of averaged scans, integrate over p1 and p2 for both
+    111 and 200 rings.
+    """
     if show_images:
         fig, ax = plt.subplots(ncols=4, nrows=4)
         ax = ax.flatten()
-    fig2, ax2 = plt.subplots(nrows=2)
-    pots, p1, p2 = [], [], []
+    fig2, ax2 = plt.subplots(nrows=3)
+    pots, p1, p2, p1_, p2_ = [], [], [], [], []
     for i, scan in enumerate(scans):
         avg = load_avg(scan)
         pot = get_potential(scan)
@@ -110,19 +114,32 @@ def potential_dependence(scans, show_images=True):
             ax[i].imshow(avg, origin='lower', vmax=4)
             ax[i].set_title('%u: %.2f V' % (scan, pot))
         r, I = radial_integral(avg)
+        # 111
         norm = I  / I[20:50].mean()
         ax2[0].plot(norm, label=pot)
         bg = np.array((50, 100, 145))
         p1.append(np.sum(norm[bg[0]:bg[1]] - norm[bg[:2]].mean()))
         p2.append(np.sum(norm[bg[1]:bg[2]] - norm[bg[1:]].mean()))
+        # 200
+        norm_ = I  / I[330:355].mean()
+        ax2[1].plot(norm_, label=pot)
+        bg_ = np.array((289, 325, 360, 390))
+        p1_.append(np.sum(norm_[bg_[0]:bg_[1]] - norm_[bg_[:2]].mean()))
+        p2_.append(np.sum(norm_[bg_[2]:bg_[3]] - norm_[bg_[2:]].mean()))
         pots.append(pot)
     ax2[0].plot(bg[:2], norm[bg[:2]], 'kx--')
     ax2[0].plot(bg[1:], norm[bg[1:]], 'kx--')
-    twin = ax2[1].twinx()
+    ax2[1].plot(bg_[:2], norm_[bg_[:2]], 'kx--')
+    ax2[1].plot(bg_[1:], norm_[bg_[1:]], 'kx--')
+    twin = ax2[2].twinx()
+    p1 = np.array(p1) + np.array(p1_)
+    p2 = np.array(p2) + np.array(p2_)
     twin.plot(pots, p1, 'rx')
-    twin.set_ylabel('p1, low-q, x:s')
-    ax2[1].plot(pots, p2, 'ko')
-    ax2[1].set_ylabel('p2, high-q, o:s')
+    twin.set_ylabel('p1, low-q, x:s (111+200)')
+    twin.set_ylim([-np.ptp(twin.get_ylim())*.1, twin.get_ylim()[1]])
+    ax2[2].plot(pots, p2, 'ko')
+    ax2[2].set_ylim([-np.ptp(ax2[2].get_ylim())*.1, ax2[2].get_ylim()[1]])
+    ax2[2].set_ylabel('p2, high-q, o:s (111+200)')
     ax2[0].legend()
     f1 = get_flux(scans[0]).mean()
     f2 = get_flux(scans[1]).mean()
@@ -132,12 +149,12 @@ def potential_dependence(scans, show_images=True):
     fig2.suptitle(title)
     return pots, p1, p2
 
-if 1:
+if 0:
     # 323-337: first reversible potential series, 1.2e10
-    potential_dependence(np.arange(323, 337+1))
+    potential_dependence(np.arange(323, 337+1), show_images=True)
 
 
-if 1:
+if 0:
     # 339-564 decreasing flux, parameter overview
     plt.figure()
     scans = np.arange(339, 564+1)
@@ -166,22 +183,45 @@ if 0:
     ax[2].imshow(avg * .1 + (avg * mask200) * .9, origin='lower')
 
 if 0:
-    # potential dependence for all fluxes
+    # potential dependence for all fluxes, plotting the rise of the
+    # low-q peak in the average data.
     Npots = 15
     Nfluxes = 15
     s0 = 339
-    fig, ax = plt.subplots()
+    fluxes, p1s, p2s = [], [], []
     for iflux in range(Nfluxes):
         first = s0 + iflux * Npots
         scans = np.arange(first, first + Npots)
         pots, p1, p2 = potential_dependence(scans, show_images=False)
-        ax.plot(pots, p1, 'x-', lw=.5 + iflux/2)
+        p1s.append(p1)
+        p2s.append(p2)
+        fluxes.append(get_flux(scans[0]).mean())
+    fig, ax = plt.subplots(figsize=(4,8), ncols=1)
+    for i in range(Nfluxes):
+        ax.plot(pots, np.array(p1s[i]) - i * 3, 'x-')
+        ax.text(max(pots), -i*3, '%.1e/s'%fluxes[i], ha='right')
+
+if 0:
+    # look at the diffuse stuff between 111 and 200
+    # something builds up as you apply cathodic potential, then almost
+    # recovers when you go positive again.
+    # what is it?
+    fig, ax = plt.subplots(ncols=2, figsize=(8,4))
+    scans = np.arange(339, 564)
+    pots, diffuse = [], []
+    for i, scan in enumerate(scans):
+        avg = load_avg(scan)
+        pots.append(get_potential(scan))
+        r, I = radial_integral(avg)
+        diffuse.append(np.sum(I[230:280]))
+    fluxes = np.array([get_flux(s).mean() for s in scans])
+    diffuse = np.array(diffuse)
+    ax[0].plot(pots[:15], diffuse.reshape((15,15))/fluxes.reshape((15,15)))
+    ax[1].plot(scans, diffuse.flatten()/fluxes, 'x-')
 
 """
 
-* Integrate in rings for cleaner spectra
-
-* Looks like 323-337 is a good baseline at 1e10 ph/s. There is probably a
+* Looks like 323-337 is a good baseline at 1e10 ph/s. There a
 reversible potential dependence. Also look at detail in the average images.
 And dynamics?
 
