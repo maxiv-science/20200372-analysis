@@ -1,58 +1,13 @@
-import os
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-from nmutils.utils.ion_chamber import Ionchamber
 plt.ion()
 plt.close('all')
 
 PATH = '/data/visitors/nanomax/20200372/2021062308/raw/sample/%06u.h5'
 CENTER = -1500, 515//2
-mask = np.load('mask.npy')
 
-
-def load_avg(scannr):
-    npy = '%06u.npy' % scannr
-    if os.path.exists(npy):
-        tot = np.load(npy) * mask
-    else:
-        with h5py.File(PATH % scannr, 'r') as fp:
-            dset = fp['entry/measurement/merlin/frames']
-            tot = np.zeros(dset[0].shape, dtype=np.uint64)
-            N = 1000
-            for i in range(dset.shape[0] // N):
-                chunk = np.sum(dset[i*N:(i+1)*N], axis=0)
-                tot[:] = tot + chunk
-            tot = tot / dset.shape[0]
-        np.save(npy, tot)
-    tot[:] = tot * mask
-    return tot
-
-
-def get_flux(scannr):
-    ic = Ionchamber(1.5)
-    with h5py.File(PATH % scannr, 'r') as fp:
-        current = fp['entry/measurement/alba2/1'][:]
-        energy = fp['entry/snapshot/energy'][0]
-    return ic.flux(current, energy)
-
-
-def get_potential(scannr):
-    with h5py.File(PATH % scannr, 'r') as fp:
-        pot = fp['entry/snapshot/pot'][0]
-    return pot
-
-
-def radial_integral(image):
-    tops = np.arange(50, 500) # tops of the rings on the detector
-    r = tops - CENTER[0]
-    ii, jj = np.indices(image.shape)
-    rr = np.sqrt((ii-CENTER[0])**2 + (jj-CENTER[1])**2)
-    avgs = []
-    for r_ in r:
-        mask = (np.abs(r_ - rr) <= .5)
-        avgs.append(np.mean(image[mask]))
-    return tops, np.array(avgs)
+from utils import load_avg, get_flux, get_potential, mask, radial_integral
 
 
 ### lattice parameter in air - before moving the detector.
@@ -80,7 +35,6 @@ if 0:
     for i in range(data.shape[1]):
         ax[1].plot(data[:, i, :, :].sum(axis=(0,-1)))
     plt.suptitle('%u - 11 potentials, detector pos. same as 234 etc (%.1e ph/s)' % (scan, av_flux))
-
 
 ### 248: flyscan lines at different potentials
 ### after detector move. 4.3e-8 A ~ 7e10 ph/s
@@ -149,7 +103,7 @@ def potential_dependence(scans, show_images=True):
     fig2.suptitle(title)
     return pots, p1, p2
 
-if 0:
+if 1:
     # 323-337: first reversible potential series, 1.2e10
     potential_dependence(np.arange(323, 337+1), show_images=True)
 
@@ -169,12 +123,14 @@ if 0:
 
 
 if 0:
-    # find center and radii for the two 111 peaks
-    avg = load_avg(339)
+    # find center and radii for the two peaks
+    avg = load_avg(234) # before move, air
+#    avg = load_avg(339) # after move, high flux
+#    avg = load_avg(548) # after move, low flux
     fig, ax = plt.subplots(ncols=3)
-    ax[0].imshow(avg, origin='lower')
-    r111 = -CENTER[0] + 180
-    r200 = -CENTER[0] + 425
+    ax[0].imshow(np.log10(avg), origin='lower', vmax=0)
+    r111 = -CENTER[0] + 180 + 96.5
+    r200 = -CENTER[0] + 425 + 96.5
     ii, jj = np.indices(avg.shape)
     radii = np.sqrt((ii - CENTER[0])**2 + (jj - CENTER[1])**2)
     mask111 = (np.abs(radii - r111) < 5)
