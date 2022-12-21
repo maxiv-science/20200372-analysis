@@ -33,7 +33,7 @@ r0 = 50e-9  # 100 nm beam
 D = 5e-5 * 1e-4   # 5e-5 cm2/s for H2, converted to m2/s
 c0 = 0   # initial solute conc in beam, M
 v = .0005    # M/s, rate of solute generation
-r = np.logspace(-9, -3, 500)
+r = np.logspace(-10, -3, 1000)
 t = np.logspace(-8, 1, 200)
 dimensions = 2  # dimensions (1=flat, 2=cylindrical, 3=spherical)
 
@@ -75,30 +75,38 @@ def laplacian(a, r, dim=2):
 def H(x):
     return (x >= 0).astype(int)
 
+
+def Cmean(C, r, r0):
+    """
+    Average concentration across a beam of radius r0, as function of
+    time. Tricky because of the uneven r spacing.
+
+    C = C[t, r]
+    """
+    edge = np.where(r <= r0)[-1][-1]
+    av = (
+        np.sum(
+            C[:, :edge] * 2 * r[:edge]
+            * np.diff(r)[:edge].reshape((1, -1)),
+            axis=1)) / r0**2
+    return av
+
+
 if __name__ == '__main__':
     def dydt(y, t, r, v, D, r0):
         stp = r[1] - r[0]
         return D * laplacian(y, r, dim=dimensions) + v * H(r0 - r)
 
 
-    if 1:
+    if 0:
         # single simulation of H2 generation at NanoMAX in real units: 3 mM
         v = 1505  # M / s
         r0 = 50e-9
         D = 5e-9
         y0 = np.zeros_like(r)
         c = odeint(dydt, y0, t, args=(r, v, D, r0))
-
-        edge = np.where(r <= r0)[-1][-1]
-        mol_per_length = np.sum(
-            c[:, :edge]
-            * 2 * np.pi * r[:edge]
-            * np.diff(r)[:edge].reshape((1, -1)),
-            axis=1,
-        )
-        av_conc = mol_per_length / (np.pi * r0**2)
-        plt.plot(t, av_conc)
-
+        C_ = Cmean(C, r)
+        plt.plot(t, C_)
 
     if 0:
         # simulate across a relevant parameter space and save the data.
@@ -116,30 +124,23 @@ if __name__ == '__main__':
             conc.append(odeint(dydt, y0, t, args=(r, v, D, r0)))
         np.savez('diffusion.npz', conc=np.array(conc), r=r, t=t, vs=vs, Ds=Ds, r0s=r0s)
 
-
-
-    if 0:
+    if 1:
         fig, ax = plt.subplots(ncols=1, figsize=(6,4))
         plt.subplots_adjust(bottom=.2, left=.15, right=.99, top=.99)
-
         dct = np.load('diffusion.npz')
         for k in dct.keys():
             exec("%s = dct['%s']" % (k, k))
         for v, D, r0, c in zip(vs, Ds, r0s, conc):
-            edge = np.where(r <= r0)[-1][-1]
-            mol_per_length = np.sum(
-                c[:, :edge]
-                * 2 * np.pi * r[:edge]
-                * np.diff(r)[:edge].reshape((1, -1)),
-                axis=1,
-            )
-            av_conc = mol_per_length / (np.pi * r0**2)
-            ax.plot(
-                np.log10(t * D / r0**2),
-                av_conc / (v * r0**2 / D / np.sqrt(3)),
-                lw=1,)
-    #    x = np.linspace(-.5, 10)
-    #    plt.plot(x, x, 'k--')
+#           av_conc = Cmean(c, r, r0)
+#           ax.plot(
+#               np.log10(t * D / r0**2),
+#               av_conc / (v * r0**2 / D / np.sqrt(3)),
+#               lw=1,)
+           ax.plot(
+               np.log10(2 * t * D / r0**2)+1,
+               c[:, 0] / (v * r0**2 / D / np.sqrt(3)),
+               lw=1,)
+
         ax.xaxis.set_ticks(range(-6, 9, 2))
         ax.yaxis.set_ticks(range(0, 9, 2))
         ax.set_xlabel("$log(\\bar{t}) = log(t * D / {r_0}^2)$")
@@ -150,26 +151,3 @@ if __name__ == '__main__':
         ax.plot([mark, mark], [ymin, mark], color='gray', linestyle=':')
         ax.plot([xmin, mark], [mark, mark], color='gray', linestyle=':')
         plt.savefig('diffusion.pdf')
-
-
-    # ############# ok so real units?
-    # For water, 1 um tranmits .99916 according to CXRO.
-    # We have T = I/I0 = exp(-mu d), so mu is around 8.4 cm^-1. NIST says
-    # 10.4 cm^-1 at 8 keV assuming density 1 g/cm3, so adds up.
-    #
-    # This means that for a small path length d, we dump
-    # I0 - I / V = I0 (1 - exp[-mu d]) / (pi * r0**2 * d) per volume,
-    # take the low d limit and it's (I0 mu) / (pi * r0**2).
-    #
-    # Choppin et al say that G for H2 is 0.047 umol/J. So that would mean...
-    r0 = 50e-9  # m
-    I0 = 7e10   # photons per second
-    mu = 8.4e2  # 1/m
-    v = (I0 * mu / r0**2 / np.pi  # absorbed photons per m3 per second
-         * 8500 * 1.602e-19  # photon energy in J
-         * .047 * 1e-6       # mol created per J
-         * 1e-3)             # conversion to mol/L/s.
-
-    # now do the calculation for H2
-    D = 5e-5 * 1e-4  # m2 / s
-    C_H2 = v * r0**2 / (np.sqrt(3) * D) * np.log10(1 * D / r0**2)

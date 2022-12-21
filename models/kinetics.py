@@ -10,11 +10,11 @@ product formation is function of flux density.
 (5)  .OH + .OH -> H2O2
 
 Rate constants in 1 / M / s:
-(1) k1 = 5e7   (https://doi.org/10.1021/j100879a503)
-(2) k2 = 3.6e7 (https://doi.org/10.1039/FT9959103127)
-(3) k3 = 7e9   (JK Thomas, Trans. Faraday Soc. 61, 1965, 702)
-(4) k4 = 5e9   (https://doi.org/10.1016/1359-0197(90)90040-O)
-(5) k5 = 5e9   (Thomas 1965)
+(1) k1 = 5e7   Thomas1966 - https://doi.org/10.1021/j100879a503
+(2) k2 = 3.6e7 Mezyk1995 - https://doi.org/10.1039/FT9959103127
+(3) k3 = 7e9   Thomas1965
+(4) k4 = 5e9   Sehested1990 - https://doi.org/10.1016/1359-0197(90)90040-O
+(5) k5 = 5e9   Thomas 1965
 
 So 1-2 are slow, and 3-5 are fast and comparable with each other.
 
