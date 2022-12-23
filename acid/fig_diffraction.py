@@ -2,8 +2,11 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+import matplotlib
 from utils import (load_avg, get_flux, get_potential, mask, PATH,
                    radial_integral)
+
+matplotlib.rcParams.update({'font.size': 8})
 
 plt.ion()
 
@@ -42,9 +45,9 @@ d_after = lam / 2 / np.sin(
 
 ### now for the plotting
 plt.close('all')
-fig = plt.figure(constrained_layout=True, figsize=(6,6))
-gs = GridSpec(5, 3, figure=fig, width_ratios=[3, 1, 1])
-ax0 = fig.add_subplot(gs[:, 0])
+fig = plt.figure(figsize=(3.33,4))
+gs = GridSpec(5, 3, figure=fig, width_ratios=[1, 1, 3])
+ax0 = fig.add_subplot(gs[:, 2])
 # fig, ax = plt.subplots(ncols=2, nrows=1)
 
 ### first some powder plots
@@ -64,7 +67,7 @@ d349 = d_after[pix] * 1e10
 pix, I549 = radial_integral(load_avg(549))
 d549 = d_after[pix] * 1e10
 ###
-ax0.plot(d234, I234 * 4, label='in air')
+ax0.plot(d234, I234 * 4 - .3, label='in air')
 ax0.plot(d339, I339, label='%.1f V'%get_potential(339))
 # ax0.plot(d247, I247, label='before move')
 ax0.plot(d349, I349, label='%.1f V'%get_potential(349))
@@ -73,29 +76,30 @@ ax0.set_xlim([2.2, 2.4])
 ax0.axvline(a_Pd * 1e10 / np.sqrt(3), linestyle='--', color='k')
 ax0.axvline(a_PdH * 1e10 / np.sqrt(3), linestyle='--', color='k')
 ax0.legend(loc='lower right')
-ax0.set_title('average (111) rings')
-ax0.text(2.244, 2.2, 'Pd ', ha='right', fontsize=16)
-ax0.text(2.36, 2.2, '$\\beta$-PdH$_x$', ha='center', fontsize=16)
+ax0.set_title('c) (111) intensity', loc='left')
+ax0.text(2.244, 2.2, 'Pd ', ha='right', fontsize=12)
+ax0.text(2.36, 2.2, '$\\beta$-PdH$_x$', ha='center', fontsize=12)
 ax0.set_xlabel('d / Å')
+ax0.set_yticks([])
 
 ### then some images - here's air
-ax1 = [fig.add_subplot(gs[i, 1]) for i in range(5)]
+ax1 = [fig.add_subplot(gs[i, 0]) for i in range(5)]
 i0, i1 = 63073+5, 63136-10
 with h5py.File(PATH % 235, 'r') as fp:
     for i in range(5):
         im = fp['entry/measurement/merlin/frames'][i0+(i1-i0)//5*i]
-        im = im[:80, 200:400]
+        im = im[:80, 210:390]
         ii, jj = np.indices(im.shape)
         com = np.sum(jj * im) / np.sum(im)
         im = np.roll(im, -int(com - im.shape[1]//2), axis=1)
         cut = (im.shape[1] - im.shape[0]) // 2
         im = im[:, cut:-cut]
-        ax1[i].imshow(np.log10(im))
+        ax1[i].imshow(np.log10(im), aspect='auto')
         plt.setp(ax1[i], xticks=[], yticks=[])
-ax1[0].set_title('in air')
+ax1[0].set_title('a) air', loc='left')
 
 ### then some more images - here's acid
-ax2 = [fig.add_subplot(gs[i, 2]) for i in range(5)]
+ax2 = [fig.add_subplot(gs[i, 1]) for i in range(5)]
 frames = [353, 355, 356, 357, 358]
 R = 1000
 x = np.linspace(0, 120)
@@ -109,11 +113,23 @@ with h5py.File(PATH % 351, 'r') as fp:
         #im = np.roll(im, -int(com - im.shape[1]//2), axis=1)
         cut = (im.shape[1] - im.shape[0]) // 2
         im = im[:, cut:-cut]
-        ax2[i].imshow(np.log10(im), origin='lower', vmax=2.5)
+        ax2[i].imshow(np.log10(im), origin='lower', vmax=2.5, aspect='auto')
         ax2[i].plot([], []) # for the colors
         ax2[i].plot(x, y + 77, '--')
         ax2[i].plot(x, y + 27, '--')
         plt.setp(ax2[i], xticks=[], yticks=[])
-ax2[0].set_title('in acid')
+ax2[0].set_title('b) acid', loc='left')
 
+### add an inset with a reconstruction
+a = fig.add_axes([.03, .0, .2, .18])
+a.set_xticks([])
+a.set_yticks([])
+a.axis('off')
+im = plt.imread('../air/assembly/235_63/plot3d.png')
+alpha = (im.sum(axis=2) < 2.999).astype(float)
+im = np.pad(im, ((0, 0), (0, 0), (0, 1)))
+im[:, :, -1] = alpha
+a.imshow(im)
+
+plt.subplots_adjust(bottom=.12, left=.01, right=.95, top=.95, wspace=.1, hspace=.05)
 plt.savefig('fig_diffraction.pdf')

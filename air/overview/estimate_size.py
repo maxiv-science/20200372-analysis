@@ -1,6 +1,10 @@
-### Like the simulation script, but directly compares an
-### experimental pattern with the simulated equivalent.
-### Result: 45 nm.
+"""
+Like the simulation script, but directly compares an
+experimental pattern with the simulated equivalent.
+Result: 45 nm.
+
+This generates Fig S1 of the paper.
+"""
 
 import ptypy
 import nmutils
@@ -70,11 +74,14 @@ diff = nmutils.utils.noisyImage(I, photonsTotal=photons)
 
 # plot
 w = 40
-fig, ax = plt.subplots(ncols=2)
+fig, ax = plt.subplots(ncols=2, figsize=(6, 3))
+plt.subplots_adjust(bottom=.1, top=.9, right=.97, left=.07)
 ax[0].imshow(diff, interpolation='none', cmap='jet', norm=matplotlib.colors.LogNorm())
 ax[0].set_xlim(128-w//2, 128+w//2)
 ax[0].set_ylim(128-w//2, 128+w//2)
 ax[0].set_title('simulation with d=%.0f nm'%(diameter*1e9))
+
+1 / 0
 
 # real data
 scan, frame = 234, 7691
@@ -84,3 +91,5 @@ ax[1].imshow(np.log10(im), vmax=np.log10(2000), cmap='jet')
 ax[1].set_ylim(82-w//2, 82+w//2)
 ax[1].set_xlim(38-w//2, 38+w//2)
 ax[1].set_title('real data, scan %u frame %u'%(scan, frame))
+
+plt.savefig('size_estimation.pdf')
