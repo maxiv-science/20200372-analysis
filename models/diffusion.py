@@ -91,7 +91,6 @@ def Cmean(C, r, r0):
             axis=1)) / r0**2
     return av
 
-
 if __name__ == '__main__':
     def dydt(y, t, r, v, D, r0):
         stp = r[1] - r[0]
@@ -131,15 +130,15 @@ if __name__ == '__main__':
         for k in dct.keys():
             exec("%s = dct['%s']" % (k, k))
         for v, D, r0, c in zip(vs, Ds, r0s, conc):
-#           av_conc = Cmean(c, r, r0)
-#           ax.plot(
-#               np.log10(t * D / r0**2),
-#               av_conc / (v * r0**2 / D / np.sqrt(3)),
-#               lw=1,)
-           ax.plot(
-               np.log10(2 * t * D / r0**2)+1,
-               c[:, 0] / (v * r0**2 / D / np.sqrt(3)),
-               lw=1,)
+          av_conc = Cmean(c, r, r0)
+          ax.plot(
+              np.log10(t * D / r0**2),
+              av_conc / (v * r0**2 / D / np.sqrt(3)),
+              lw=1,)
+           # ax.plot(
+           #     np.log10(2 * t * D / r0**2)+1,
+           #     c[:, 0] / (v * r0**2 / D / np.sqrt(3)),
+           #     lw=1,)
 
         ax.xaxis.set_ticks(range(-6, 9, 2))
         ax.yaxis.set_ticks(range(0, 9, 2))

@@ -7,11 +7,12 @@ import h5py
 import numpy as np
 from scipy.ndimage import label
 import matplotlib.pyplot as plt
+import matplotlib
 import random
 
 from utils import get_potential, get_flux
 
-plt.rc('font', size=14)
+matplotlib.rcParams.update({'font.size': 8})
 
 
 PATH = '/data/visitors/nanomax/20200372/2021062308/raw/sample/%06u.h5'
@@ -70,11 +71,11 @@ def get_hits_for_scans(scans, plot=True):
             arr = fp['entry/measurement/merlin/frames'][:]
             arr[:] = arr * mask
         flux = get_flux(scan).mean()
-        cutoff = 2000 / 2e10 * flux  # refer binned pixel signal to high-flux scan.
+        cutoff = 1000 / 2e10 * flux  # refer binned pixel signal to high-flux scan.
         hitlist.append(count_hits(arr, plot=plot, cutoff=cutoff))
     return hitlist
 
-if False:
+if True:
     fluxes, hits = [], []
     scans = np.arange(339, 339+15)  # first series, highest flux
     for i in range(15): # 15 fluxes
@@ -90,14 +91,18 @@ else:
     pots = dct['pots']
     hits = dct['hits']
 
-plt.figure(figsize=(5,8))
-plt.subplots_adjust(bottom=.1, left=.18, right=.95, top=.95)
+plt.figure(figsize=(3.33,5))
+plt.subplots_adjust(bottom=.08, left=.16, right=.99, top=.99)
 for iflux in range(15):
-    offset = -iflux * 40
-    plt.plot(pots, hits[iflux, :, 1] + offset, 'x-', lw=2-iflux/10)
-    plt.text(.6, offset+10, '%.1e' % fluxes[iflux], ha='right', fontsize=10)
-plt.text(.6, 100, 'Flux / (ph/s):', ha='right')
-plt.xlabel('E / (V vs. Ag/AgCl)', fontsize=14)
-plt.ylabel('$\\beta$-Pd(111) hits', fontsize=14)
+    offset = -iflux * 50
+    plt.plot(pots, hits[iflux, :, 1] + offset, 'x-',)# lw=2-iflux/10)
+    flux = fluxes[iflux]
+    order = int(np.log10(flux))
+    prefactor = flux / (10**order)
+    plt.text(.6, offset+10, '%.1f $\\times 10^{%d}$' % (prefactor, order),
+             ha='right')
+plt.text(.6, 100, 'Flux (s$^{-1}$):', ha='right')
+plt.xlabel('E (V vs. Ag/AgCl sat.)')
+plt.ylabel('$\\beta$-PdH$_x$(111) intensity')
 plt.yticks([0,100,200])
 plt.savefig('fig_flux_dependence.pdf')

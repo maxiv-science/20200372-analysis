@@ -82,6 +82,8 @@ ax0.text(.01 + a_PdH * 1e10 / np.sqrt(3), 2.2, '$\\beta$-PdH$_x$', ha='left')
 ax0.set_xlabel('d / Å')
 ax0.set_yticks([])
 
+pars = dict(aspect='auto', interpolation='none')
+
 ### then some images - here's air
 ax1 = [fig.add_subplot(gs[i, 0]) for i in range(5)]
 i0, i1 = 63073+5, 63136-10
@@ -94,7 +96,7 @@ with h5py.File(PATH % 235, 'r') as fp:
         im = np.roll(im, -int(com - im.shape[1]//2), axis=1)
         cut = (im.shape[1] - im.shape[0]) // 2
         im = im[:, cut:-cut]
-        ax1[i].imshow(np.log10(im), aspect='auto')
+        ax1[i].imshow(np.log10(im), vmax=3, **pars)
         plt.setp(ax1[i], xticks=[], yticks=[])
 ax1[0].set_title('a) air', loc='left')
 
@@ -113,7 +115,7 @@ with h5py.File(PATH % 351, 'r') as fp:
         #im = np.roll(im, -int(com - im.shape[1]//2), axis=1)
         cut = (im.shape[1] - im.shape[0]) // 2
         im = im[:, cut:-cut]
-        ax2[i].imshow(np.log10(im), origin='lower', vmax=2.5, aspect='auto')
+        ax2[i].imshow(np.log10(im), origin='lower', vmax=2, **pars)
         ax2[i].plot([], []) # for the colors
         ax2[i].plot(x, y + 77, '--')
         ax2[i].plot(x, y + 27, '--')

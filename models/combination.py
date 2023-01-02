@@ -34,7 +34,7 @@ def dcdt(C, t, D, r, r0, flux_density=0):
 
     return dC.flatten()
 
-if False:
+if True:
     r0 = 50e-9
     r = np.logspace(-9, -3, 500)
     t = np.logspace(-6, 1, 200)
