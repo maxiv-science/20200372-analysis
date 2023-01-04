@@ -76,7 +76,7 @@ ax0.set_xlim([2.2, 2.4])
 ax0.axvline(a_Pd * 1e10 / np.sqrt(3), linestyle='--', color='k')
 ax0.axvline(a_PdH * 1e10 / np.sqrt(3), linestyle='--', color='k')
 ax0.legend(loc='lower right')
-ax0.set_title('c) (111) intensity', loc='left')
+ax0.set_title('c) (111) intensity', loc='left', fontsize=8)
 ax0.text(-.01 + a_Pd * 1e10 / np.sqrt(3), 2.2, 'Pd ', ha='right')
 ax0.text(.01 + a_PdH * 1e10 / np.sqrt(3), 2.2, '$\\beta$-PdH$_x$', ha='left')
 ax0.set_xlabel('d / Å')
@@ -98,7 +98,7 @@ with h5py.File(PATH % 235, 'r') as fp:
         im = im[:, cut:-cut]
         ax1[i].imshow(np.log10(im), vmax=3, **pars)
         plt.setp(ax1[i], xticks=[], yticks=[])
-ax1[0].set_title('a) air', loc='left')
+ax1[0].set_title('a) air', loc='left', fontsize=8)
 
 ### then some more images - here's acid
 ax2 = [fig.add_subplot(gs[i, 1]) for i in range(5)]
@@ -120,7 +120,7 @@ with h5py.File(PATH % 351, 'r') as fp:
         ax2[i].plot(x, y + 77, '--')
         ax2[i].plot(x, y + 27, '--')
         plt.setp(ax2[i], xticks=[], yticks=[])
-ax2[0].set_title('b) acid', loc='left')
+ax2[0].set_title('b) acid', loc='left', fontsize=8)
 
 ### add an inset with a reconstruction
 a = fig.add_axes([.03, .0, .2, .18])
