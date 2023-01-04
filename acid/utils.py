@@ -9,7 +9,7 @@ CENTER = -1500, 515//2
 
 
 def load_avg(scannr):
-    npy = '%06u.npy' % scannr
+    npy = 'npy/%06u.npy' % scannr
     if os.path.exists(npy):
         tot = np.load(npy) * mask
     else:
