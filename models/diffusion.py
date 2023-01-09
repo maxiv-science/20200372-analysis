@@ -24,7 +24,7 @@ import numpy as np
 from scipy.integrate import odeint
 from scipy.interpolate import UnivariateSpline
 import matplotlib.pyplot as plt
-plt.rc('font', size=14)
+plt.rc('font', size=8)
 plt.ion()
 
 
@@ -96,17 +96,6 @@ if __name__ == '__main__':
         stp = r[1] - r[0]
         return D * laplacian(y, r, dim=dimensions) + v * H(r0 - r)
 
-
-    if 0:
-        # single simulation of H2 generation at NanoMAX in real units: 3 mM
-        v = 1505  # M / s
-        r0 = 50e-9
-        D = 5e-9
-        y0 = np.zeros_like(r)
-        c = odeint(dydt, y0, t, args=(r, v, D, r0))
-        C_ = Cmean(C, r)
-        plt.plot(t, C_)
-
     if 0:
         # simulate across a relevant parameter space and save the data.
         vs = np.logspace(0, 3, 4)     # M / s - estimated from G values
@@ -124,29 +113,52 @@ if __name__ == '__main__':
         np.savez('diffusion.npz', conc=np.array(conc), r=r, t=t, vs=vs, Ds=Ds, r0s=r0s)
 
     if 1:
-        fig, ax = plt.subplots(ncols=1, figsize=(6,4))
-        plt.subplots_adjust(bottom=.2, left=.15, right=.99, top=.99)
+        fig, ax = plt.subplots(ncols=2, figsize=(6,2.5),
+            gridspec_kw=dict(width_ratios=[2, 1]))
+        plt.subplots_adjust(bottom=.2, left=.07, right=.98, top=.95, wspace=.3)
+
+        # a) general solution
         dct = np.load('diffusion.npz')
         for k in dct.keys():
             exec("%s = dct['%s']" % (k, k))
         for v, D, r0, c in zip(vs, Ds, r0s, conc):
           av_conc = Cmean(c, r, r0)
-          ax.plot(
-              np.log10(t * D / r0**2),
+          ax[0].plot(
+              np.log10(2 * t * D / r0**2),
               av_conc / (v * r0**2 / D / np.sqrt(3)),
-              lw=1,)
-           # ax.plot(
-           #     np.log10(2 * t * D / r0**2)+1,
-           #     c[:, 0] / (v * r0**2 / D / np.sqrt(3)),
-           #     lw=1,)
+              lw=.5, color='k')
 
-        ax.xaxis.set_ticks(range(-6, 9, 2))
-        ax.yaxis.set_ticks(range(0, 9, 2))
-        ax.set_xlabel("$log(\\bar{t}) = log(t * D / {r_0}^2)$")
-        ax.set_ylabel("$\\bar{c} = c / (v * {r_0}^2 / [D \\sqrt{3}])$")
-        ax.set_aspect('equal')
-        mark, xmin, ymin = 8, ax.get_xlim()[0], ax.get_ylim()[0]
+        ax[0].xaxis.set_ticks(range(-6, 9, 2))
+        ax[0].yaxis.set_ticks(range(0, 9, 2))
+        ax[0].set_xlabel("$\log(\\bar{t}) = \log(2 D t / {r_0}^2)$")
+        ax[0].set_ylabel("$\\bar{c} = |c| \cdot D \sqrt{3} / (v * {r_0}^2)$")
+        ax[0].set_aspect('equal')
+        mark, xmin, ymin = 8, ax[0].get_xlim()[0], ax[0].get_ylim()[0]
         plt.autoscale(False)
-        ax.plot([mark, mark], [ymin, mark], color='gray', linestyle=':')
-        ax.plot([xmin, mark], [mark, mark], color='gray', linestyle=':')
-        plt.savefig('diffusion.pdf')
+        ax[0].plot([mark, mark], [ymin, mark], color='gray', linestyle=':')
+        ax[0].plot([xmin, mark], [mark, mark], color='gray', linestyle=':')
+
+        # b) specific NanoMAX solution
+        # Cbar = |C|_beam * D * sqrt(3) / (v * r_0**2))
+        # tbar = t * 2 * D /  (r_0**2)
+        # Cbar = log10(tbar)
+        #
+        # Now, at 8.5 keV and 7e10/s on the sample, H2 is produced
+        # at v=1505 M/s.
+        t = np.logspace(-7, 0)
+        v = 1505 # M/s converted to mol/m3/s
+        r0 = 50e-9 # m
+        D = 5e-5 * 1e-4  # m2 / s
+        Cmean = v * r0**2 / (D * np.sqrt(3)) * np.log10(t * 2 * D / r0**2)
+        Cmean[0] = 0
+        ax[1].plot(t, Cmean * 1e3, 'k')
+        #ax[1].set_xscale('log')
+        ax[1].set_xlim(-.01, 1)
+        ax[1].set_ylim(0, 3)
+        ax[1].set_ylabel('$|c|$ (mM)')
+        ax[1].set_xlabel('$t$ (s)')
+        ax[1].set_yticks([0, 1, 2, 3])
+
+        fig.text(.01, .99, 'a)', va='top')
+        fig.text(.65, .99, 'b)', va='top')
+        plt.savefig('fig_diffusion.pdf')
