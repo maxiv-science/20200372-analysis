@@ -6,7 +6,7 @@ In the cylindrical geometry, which is a model for photo-generated
 species inside a beam, the average concentration for (r < r0) does not
 settle at a steady state, but grows like
 
- |c| = (sqrt(3) * v * r0**2 / D) * log(t * D / r0**2),
+ c_av = (sqrt(3) * v * r0**2 / D) * log(t * D / r0**2),
 
 where the log argument is unitless and the first factor has units of
 concentration. For constant beam flux and assuming a linear
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     if 0:
         # simulate across a relevant parameter space and save the data.
-        vs = np.logspace(0, 3, 4)     # M / s - estimated from G values
+        vs = np.logspace(0, 4, 5)     # M / s - estimated from G values
         vs *= 1e3                     # mol / m3 / s
         Ds = np.logspace(-7, -4, 4)   # cm2 / s
         Ds *= 1e-4                    # m2 / s
@@ -130,8 +130,8 @@ if __name__ == '__main__':
 
         ax[0].xaxis.set_ticks(range(-6, 9, 2))
         ax[0].yaxis.set_ticks(range(0, 9, 2))
-        ax[0].set_xlabel("$\log(\\bar{t}) = \log(2 D t / {r_0}^2)$")
-        ax[0].set_ylabel("$\\bar{c} = |c| \cdot D \sqrt{3} / (v * {r_0}^2)$")
+        ax[0].set_xlabel("$\log(\\bar{t}) = \log(2 D_i t / {r_0}^2)$")
+        ax[0].set_ylabel("$\\bar{c_i} = c_{i,\mathrm{av}} \cdot D_i \sqrt{3} / (v_{i,\mathrm{beam}} * {r_0}^2)$")
         ax[0].set_aspect('equal')
         mark, xmin, ymin = 8, ax[0].get_xlim()[0], ax[0].get_ylim()[0]
         plt.autoscale(False)
@@ -139,14 +139,22 @@ if __name__ == '__main__':
         ax[0].plot([xmin, mark], [mark, mark], color='gray', linestyle=':')
 
         # b) specific NanoMAX solution
-        # Cbar = |C|_beam * D * sqrt(3) / (v * r_0**2))
+        # Cbar = C_av * D * sqrt(3) / (v * r_0**2))
         # tbar = t * 2 * D /  (r_0**2)
         # Cbar = log10(tbar)
         #
-        # Now, at 8.5 keV and 7e10/s on the sample, H2 is produced
-        # at v=1505 M/s.
+        # Now, at 8.5 keV and 7e10/s on the sample, H is produced
+        # at v=3870 M/s assuming a thin sample, the 1/e attenuation
+        # length is 1192 um, so dumped energy is (1 - e^[-1/1192])
+        # for 1 um, which would deposit 7e10 photons in a volume
+        # 3.14 * 50e-9**2 * 1e-6, and since each photon has
+        # 8500 * 1.602e-19 J of energy...
+        mol_per_J = .38e-6
+        W_per_m3 = (7e10 * 8500 * 1.602e-19 * (1 - np.exp(-1/1192.)) / 
+                    (3.14 * 50e-9**2 * 1e-6))
+        M_per_s = W_per_m3 * 1e-3 * mol_per_J
+        v = M_per_s
         t = np.logspace(-7, 0)
-        v = 1505 # M/s converted to mol/m3/s
         r0 = 50e-9 # m
         D = 5e-5 * 1e-4  # m2 / s
         Cmean = v * r0**2 / (D * np.sqrt(3)) * np.log10(t * 2 * D / r0**2)
@@ -154,10 +162,10 @@ if __name__ == '__main__':
         ax[1].plot(t, Cmean * 1e3, 'k')
         #ax[1].set_xscale('log')
         ax[1].set_xlim(-.01, 1)
-        ax[1].set_ylim(0, 3)
-        ax[1].set_ylabel('$|c|$ (mM)')
+        ax[1].set_ylim(0, 8)
+        ax[1].set_ylabel('$c_\mathrm{H,av}$ (mM)')
         ax[1].set_xlabel('$t$ (s)')
-        ax[1].set_yticks([0, 1, 2, 3])
+        ax[1].set_yticks(range(0, 9, 2))
 
         fig.text(.01, .99, 'a)', va='top')
         fig.text(.65, .99, 'b)', va='top')
