@@ -37,15 +37,18 @@ We'll do this as coupled ODE:s, based on a species vector:
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import numpy as np
-plt.rc('font', size=14)
+plt.rc('font', size=8)
 plt.ion()
 
-
-def spur_rates(C, t, flux_density=0, beam_off=None):
+def spur_rates(C, t, flux_density=0, mu=8.4e2):
     # beam-induced (spur) kinetics
+    # mu is the exp(-mu * length) attenuation coefficient in 1/m,
+    # equivalent to the inverse of the 1/e attenuation length.
+    # 7.3e5 at 800 eV
+    # 8.4e2 at 8.5 keV
+    # 45 at 24 keV
+    # 32 at 30 keV
 
-    # caluclate spur rates for 8.5 keV
-    mu = 8.4e2  # 1/m
     # the number photon absorption rate per volume:
     r = flux_density * mu  # ph / m3
     # the absorbed power per volume:
@@ -61,83 +64,97 @@ def spur_rates(C, t, flux_density=0, beam_off=None):
     dH2O = -dOH - 2 * dH2O2
     dHO2 = dO2 = 0
 
-    # make sure masses balance
-    # assert np.allclose(dOH + 2*dH2O2 + 2*dHO2 + 2*dO2 + dH2O, 0)  # oxygen
-    # assert np.allclose(dOH + dH + 2*dH2 + 2*dH2O2 + dHO2 + 2*dH2O, 0)  # hydrogen
+    # print('H. photoproduction %.1f M/s' % dH)
 
-    # optionally switch off the beam at some time
-    if beam_off and (t > beam_off):
-        dOH = dH = dH2 = dH2O2 = 0
-
-    return np.array((dOH, dH, dH2, dH2O2, dHO2, dO2, dH2O))
+    if len(C) == 7:
+        return np.array((dOH, dH, dH2, dH2O2, dHO2, dO2, dH2O))
+    else:
+        return np.array((dOH, dH, dH2, dH2O2))
 
 def homo_rates(C, t):
     # homogeneous kinetics
 
-    # unpack
-    OH, H, H2, H2O2, HO2, O2, H2O = C
+    include_O2 = (len(C) == 7)
 
     k1 = 5e7
     k2 = 3.6e7
     k3 = 7e9
     k4 = 5e9
     k5 = 5e9
-    k6 = 2.1e4
-    k7 = 8.3e-1
-    k8 = 6e3
 
-    r1 = k1 * H2 * OH
-    r2 = k2 * H * H2O2
-    r3 = k3 * OH * H
-    r4 = k2 * H**2
-    r5 = k5 * OH**2
-    r6 = k6 * H * O2
-    r7 = k7 * HO2**2
-    r8 = k8 * HO2 * OH
+    if include_O2:
+        OH, H, H2, H2O2, HO2, O2, H2O = C
 
-    dOH = -r1 + r2 - r3 - 2 * r5 - r8
-    dH = r1 - r2 - r3 - 2 * r4 - r6
-    dH2 = -r1 + r4
-    dH2O2 = -r2 + r5 + r7
-    dHO2 = r6 - 2 * r7 - r8
-    dO2 = -r6 + r7 + r8
-    dH2O = r1 + r2 + r3 + r8
+        k6 = 2.1e4
+        k7 = 8.3e-1
+        k8 = 6e3
 
-    # make sure masses balance
-    # assert np.allclose(dOH + 2*dH2O2 + 2*dHO2 + 2*dO2 + dH2O, 0)  # oxygen
-    # assert np.allclose(dOH + dH + 2*dH2 + 2*dH2O2 + dHO2 + 2*dH2O, 0)  # hydrogen
+        r1 = k1 * H2 * OH
+        r2 = k2 * H * H2O2
+        r3 = k3 * OH * H
+        r4 = k2 * H**2
+        r5 = k5 * OH**2
+        r6 = k6 * H * O2
+        r7 = k7 * HO2**2
+        r8 = k8 * HO2 * OH
 
-    return np.array((dOH, dH, dH2, dH2O2, dHO2, dO2, dH2O))
+        dOH = -r1 + r2 - r3 - 2 * r5 - r8
+        dH = r1 - r2 - r3 - 2 * r4 - r6
+        dH2 = -r1 + r4
+        dH2O2 = -r2 + r5 + r7
+        dHO2 = r6 - 2 * r7 - r8
+        dO2 = -r6 + r7 + r8
+        dH2O = r1 + r2 + r3 + r8
 
-def rates(C, t, flux_density=0, beam_off=None):
-    return (spur_rates(C, t, flux_density, beam_off)
+        return np.array((dOH, dH, dH2, dH2O2, dHO2, dO2, dH2O))
+
+    else:
+        OH, H, H2, H2O2 = C
+
+        r1 = k1 * H2 * OH
+        r2 = k2 * H * H2O2
+        r3 = k3 * OH * H
+        r4 = k2 * H**2
+        r5 = k5 * OH**2
+
+        dOH = -r1 + r2 - r3 - 2 * r5
+        dH = r1 - r2 - r3 - 2 * r4
+        dH2 = -r1 + r4
+        dH2O2 = -r2 + r5
+
+        return np.array((dOH, dH, dH2, dH2O2))
+
+
+def rates(C, t, flux_density=0):
+    return (spur_rates(C, t, flux_density)
             + homo_rates(C, t))
 
 if __name__ == '__main__':
     c0 = np.zeros(7)
     c0[5] = 250e-6  # air-saturated
+    flux = 1e13 / (100e-6)**2  # Balder, MAX IV
+
     t = np.logspace(-7, 3)
-    # flux = 7e10 / (105e-9)**2  # nanomax
-    flux = 1e13 / (100e-6)**2  # balder
-    # flux = 1e9 / (50e-9)**2  # softimax, 700 eV!
-    c = odeint(rates, c0, t, args=(flux, None))
-    c_ = odeint(rates, np.zeros_like(c0), t, args=(flux, None))
-    plt.figure(figsize=(6,4))
-    plt.subplots_adjust(bottom=.2, left=.15, right=.99, top=.99)
-    # don't include T, without diffusion it just grows of course.
-    cols = 'kcrmgb'
-    for i, species in enumerate(['OH', 'H', 'H2', 'H2O2']):  # 'HO2', 'O2'
-        plt.plot(t, c[:, i], '-', color=cols[i], label=species)
-        plt.plot(t, c_[:, i], ':', color=cols[i])
-#    plt.plot(t, c[:, 4], label='HO2')
-#    plt.plot(t, c[:, 5], label='O2')
+    c = odeint(rates, c0, t, args=(flux,))
+    c_ = odeint(rates, np.zeros((4,)), t, args=(flux,))
+
+    fig = plt.figure(figsize=(3.33,2.5))
+    fig.subplots_adjust(bottom=.17, left=.18, right=.99, top=.99)
+
+    lines, labels = [], []
+    for i, species in enumerate(['OH$^\\bullet$', 'H$^\\bullet$', 'H$_\mathrm{2}$', 'H$_\mathrm{2}$O$_\mathrm{2}$']):
+        l1 = plt.plot(t, c[:, i], '-')
+        l2 = plt.plot(t, c_[:, i], '--', color=l1[0].get_color(), lw=2)
+        lines.append(l1[0])
+        labels.append(species)
+
     plt.xscale('log')
     plt.yscale('log')
     plt.autoscale(False)
-    plt.plot(plt.xlim(), (780e-6,)*2, '--', color='gray')
-    plt.text(1e-7, 900e-6, 'p(H2) = 1 atm')
-    plt.ylabel('$C$ / (mol / L)')
-    plt.xlabel('$t$ / s')
+    plt.plot(plt.xlim(), (0.8e-3,)*2, '--', color='gray')
+    plt.text(1e-7, 950e-6, 'p(H$_\mathrm{2}$) = 1 atm')
+    plt.ylabel('$C_i$ (M)')
+    plt.xlabel('$t$ (s)')
     plt.ylim(5e-9, 4e-3)
-    plt.legend(frameon=False)
-    plt.savefig('kinetics.pdf')
+    plt.legend(lines[::-1], labels[::-1], frameon=False)
+    plt.savefig('fig_kinetics.pdf')
