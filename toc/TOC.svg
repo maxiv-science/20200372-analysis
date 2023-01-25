@@ -30,8 +30,8 @@
      units="in"
      width="3.25in"
      inkscape:zoom="2.3502235"
-     inkscape:cx="147.0073"
-     inkscape:cy="145.51808"
+     inkscape:cx="138.92296"
+     inkscape:cy="161.68675"
      inkscape:window-width="1920"
      inkscape:window-height="1163"
      inkscape:window-x="0"
@@ -40,6 +40,53 @@
      inkscape:current-layer="layer1" />
   <defs
      id="defs2">
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect16534"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect16201"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <marker
+       style="overflow:visible;"
+       id="Arrow1Mend"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mend"
+       inkscape:isstock="true">
+      <path
+         transform="scale(0.4) rotate(180) translate(10,0)"
+         style="fill-rule:evenodd;fill:context-stroke;stroke:context-stroke;stroke-width:1.0pt;"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path6167" />
+    </marker>
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect6156"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
     <inkscape:path-effect
        effect="bspline"
        id="path-effect1564"
@@ -99,13 +146,68 @@
        d="m 82.776296,14.614899 c -8.562179,2.919808 -17.124201,5.839562 -25.986442,8.599133 -8.86224,2.759571 -19.678007,5.827982 -27.44685,4.84198 C 21.57416,27.07001 10.008966,21.160665 0.21205171,16.15484 c 0,0 -0.0475136,21.282398 -0.0475136,21.282398 C 10.795959,34.497399 23.523064,30.978055 30.370633,31.051423 c 6.847569,0.07337 14.237675,3.664387 19.529634,6.336222 5.291959,2.671836 8.801723,4.559964 12.484917,6.541391 0,0 20.056428,-0.165933 20.056428,-0.165933"
        sodipodi:nodetypes="cssccsccc" />
     <image
-       width="81.616867"
-       height="11.659553"
+       width="69.303909"
+       height="12.375699"
        preserveAspectRatio="none"
        style="image-rendering:optimizeQuality"
        xlink:href="toc_diffraction.png"
-       id="image1146"
-       x="0.58219522"
-       y="2.8716528" />
+       id="image987"
+       x="12.084591"
+       y="8.3492489" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.88056px;line-height:1.25;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;stroke-width:0.264583"
+       x="14.091346"
+       y="6.8801212"
+       id="text2137"><tspan
+         sodipodi:role="line"
+         id="tspan2135"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:serif;-inkscape-font-specification:serif;text-align:start;text-anchor:start;stroke-width:0.264583"
+         x="14.091346"
+         y="6.8801212">X-ray exposure</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 46.314692,5.7776736 c 0,0 23.711289,0 23.711289,0"
+       id="path6154"
+       inkscape:path-effect="#path-effect6156"
+       inkscape:original-d="M 46.314692,5.7776736 H 70.025981" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.88056px;line-height:1.25;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;stroke-width:0.264583"
+       x="3.0112953"
+       y="10.696997"
+       id="text6508"><tspan
+         sodipodi:role="line"
+         id="tspan6506"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:serif;-inkscape-font-specification:serif;text-align:start;text-anchor:start;stroke-width:0.264583"
+         x="3.0112953"
+         y="10.696997">Pd</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.88056px;line-height:1.25;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;stroke-width:0.264583"
+       x="0.77622783"
+       y="22.799578"
+       id="text6512"><tspan
+         sodipodi:role="line"
+         id="tspan6510"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:serif;-inkscape-font-specification:serif;text-align:start;text-anchor:start;stroke-width:0.264583"
+         x="0.77622783"
+         y="22.799578">PdH<tspan
+   style="font-style:italic;font-size:3.88056px;baseline-shift:sub"
+   id="tspan8004">x</tspan></tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 11.803754,17.914405 c -0.63883,0.68288 -1.277651,1.36575 -1.9164642,2.048611"
+       id="path16199"
+       inkscape:path-effect="#path-effect16201"
+       inkscape:original-d="M 11.803754,17.914405 C 11.165197,18.59754 10.526376,19.28041 9.8872898,19.963016"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 11.803754,12.27651 C 10.688154,11.344142 9.5722698,10.411537 8.4560987,9.4786913"
+       id="path16530"
+       inkscape:path-effect="#path-effect16534"
+       inkscape:original-d="M 11.803754,12.27651 C 10.688133,11.344168 9.5722485,10.411562 8.4560987,9.4786913"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>
