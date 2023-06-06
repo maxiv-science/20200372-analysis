@@ -8,7 +8,7 @@ import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from diffusion import laplacian, H, Cmean
-plt.rc('font', size=14)
+plt.rc('font', size=8)
 plt.ion()
 
 
@@ -37,15 +37,16 @@ dT = p_cm3 / (heat_cap * rho)  # K / s
 
 # single simulation of heating at NanoMAX in real units:
 r = np.logspace(-9, -3, 200)
-t = np.logspace(-6, 0, 200)
+t = np.logspace(-9, 0, 200)
 T0 = np.ones_like(r) * 298
 T = odeint(dydt, T0, t, args=(r, dT, D, r0))
 
-fig, ax = plt.subplots(ncols=2, constrained_layout=True, figsize=(8, 3))
+fig, ax = plt.subplots(ncols=2, constrained_layout=True, figsize=(6, 2.5))
 ax[0].plot(t, T[:, 0] - T0[0])
-ax[0].plot(t, dT * r0**2 / (D * np.sqrt(3)) * np.log10(2 * t * D / r0**2), '--')
-for i in range(0, len(t), 10):
-    ax[1].plot(r, T[i, :] - T0[0])
+# ax[0].plot(t, dT * r0**2 / (D * np.sqrt(3)) * np.log10(2 * t * D / r0**2), '--')
+for i in range(len(t) - 1, 10, -25):
+    ax[1].plot(r, T[i, :] - T0[0], label='%.1e s' % t[i])
+ax[1].legend(fontsize=7, frameon=False, labelspacing=.2)
 ax[1].set_xscale('log')
 ax[0].set_xscale('log')
 ax[0].set_xlabel('$t$ / s')
@@ -53,3 +54,5 @@ ax[1].set_xlabel('$r$ / m')
 ax[0].set_ylabel('$\Delta T(r=0)$ / K')
 ax[1].set_ylabel('$\Delta T$ / K')
 ax[1].axvline(r0, linestyle='--', color='k')
+
+plt.savefig('fig_temperature.pdf')
