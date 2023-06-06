@@ -39,7 +39,7 @@ if 0:
     mus = [7.3e5, 8.4e2, 45]
     r0 = 50e-9
     r = np.logspace(-9, -3, 500)
-    t = np.logspace(-6, 0, 200)
+    t = np.logspace(-9, 0, 200)
     y0 = np.zeros(4 * len(r))
     # [OH, H, H2, H2O2]
     D = np.array((2.3, 5, 5, 2)) * 1e-9  # m2/s
@@ -66,12 +66,13 @@ else:
 # 8.5 keV for the paper
 av_conc = av_concs[1]
 fig = plt.figure(figsize=(3.33,2.5))
-fig.subplots_adjust(bottom=.17, left=.18, right=.99, top=.98)
+fig.subplots_adjust(bottom=.17, left=.14, right=.99, top=.98)
 lines, labels = [], []
 for j, lbl in enumerate(['OH$^\\bullet$', 'H$^\\bullet$', 'H$_\mathrm{2}$', 'H$_\mathrm{2}$O$_\mathrm{2}$']):
     lines.append(plt.plot(t, av_conc[:, j] * 1e3, label=lbl)[0])
     labels.append(lbl)
 plt.xscale('log')
+plt.xlim([1e-8, 2])
 plt.ylabel('C$_i$  (mM)')
 plt.xlabel('t  (s)')
 plt.legend(lines[::-1], labels[::-1], frameon=False)
