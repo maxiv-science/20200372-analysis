@@ -42,7 +42,7 @@ def dcdt(C, t, D, r, r0, flux_density=0, mu=8.4e2):
 if 0:
     r0s = np.array((50e-9, 500e-9, 2.5e-6, 25e-6, 250e-6))
     r = np.logspace(-9, -3, 500)
-    t = np.logspace(-6, 0, 200)
+    t = np.logspace(-9, 0, 200)
     y0 = np.zeros(4 * len(r))
     # [OH, H, H2, H2O2]
     D = np.array((2.3, 5, 5, 2)) * 1e-9  # m2/s
@@ -92,7 +92,7 @@ for i, av_conc in enumerate(av_concs):
         else:
             val = d_nm
             unit = 'nm'
-        ax[i].text(1e-6, ax[i].get_ylim()[1] * .95,
+        ax[i].text(1e-9, ax[i].get_ylim()[1] * .95,
                    '$d=%d$ %s' % (val, unit), va='top')
 
 ax[4].set_xlabel('t  (s)')
