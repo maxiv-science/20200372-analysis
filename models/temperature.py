@@ -55,4 +55,7 @@ ax[0].set_ylabel('$\Delta T(r=0)$ / K')
 ax[1].set_ylabel('$\Delta T$ / K')
 ax[1].axvline(r0, linestyle='--', color='k')
 
+fig.text(.005, .99, 'a)', va='top')
+fig.text(.525, .99, 'b)', va='top')
+
 plt.savefig('fig_temperature.pdf')
